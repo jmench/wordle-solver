@@ -16,7 +16,8 @@ fun main() {
     File(filePath).forEachLine {
         sortedWords.add(it)
     }
-    wordle = sortedWords.random()
+    //wordle = sortedWords.random()
+    wordle = "mourn"
     possibleWords = sortedWords
 
     printInstructions()
@@ -25,12 +26,14 @@ fun main() {
     for (i in 1..6) {
         println("Guess $i:")
         val guess = getGuess()
-        updateGameBoard(guess, possibleWords)
+        val guessStatus = getGuessStatus()
+        getPossibleWordsBasedOnGameBoard(guessStatus, guess, possibleWords)
+        //updateGameBoard(guess, possibleWords)
         println(gameBoard)
-        if (guess.contentEquals(wordle)) {
-            println("you win")
-            return
-        }
+//        if (guess.contentEquals(wordle)) {
+//            println("you win")
+//            return
+//        }
         println("Number of possible words: " + possibleWords.size)
         println(possibleWords)
     }
@@ -79,6 +82,65 @@ fun updateGameBoard(guess: String, possibleWords: ArrayList<String>) {
             possibleWords.removeAll(wordsToRemove.toSet())
         }
     }
+}
+
+fun getPossibleWordsBasedOnGameBoard(guessStatus: String, guess : String, possibleWords: ArrayList<String>) {
+    // Need the letters at each position from the guess
+    // Need the status of each letter in the position
+    // same logic as above
+    var gameBoardArr = gameBoard.toCharArray()
+    val guessArr = guessStatus.toCharArray()
+    val guessLettersArr = guess.toCharArray()
+    for (i in gameBoardArr.indices) {
+        // if the letter is in the correct spot
+        println("letter is " + gameBoardArr[i])
+        if (gameBoardArr[i] == 'g') {
+            // get the letter from the guess
+            val letter = guessLettersArr[i]
+            print(letter + " is in the correct spot, removing words without this")
+            // loop through possible words and keep only those with letter in correct spot
+            val wordsToRemove : ArrayList<String> = ArrayList()
+            for (word in possibleWords) {
+                val charWord = word.toCharArray()
+                if (charWord[i] != letter) {
+                    wordsToRemove.add(word)
+                }
+            }
+            possibleWords.removeAll(wordsToRemove.toSet())
+        }
+        // if the letter is there but in wrong spot
+        else if (gameBoardArr[i] == 'y') {
+            val letter = guessLettersArr[i]
+            print(letter + " is in the word but not the correct spot")
+            val wordsToRemove : ArrayList<String> = ArrayList()
+            for (word in possibleWords) {
+                val charWord = word.toCharArray()
+                if (charWord[i] == letter) {
+                    wordsToRemove.add(word)
+                } else if (!word.contains(letter)) {
+                    wordsToRemove.add(word)
+                }
+            }
+            possibleWords.removeAll(wordsToRemove.toSet())
+        }
+        // if the letter is not in the word at all
+        else {
+            val letter = guessLettersArr[i]
+            print(letter + " is not in the word at all")
+            val wordsToRemove : ArrayList<String> = ArrayList()
+            for (word in possibleWords) {
+                if (word.contains(letter)) {
+                    wordsToRemove.add(word)
+                }
+            }
+            possibleWords.removeAll(wordsToRemove.toSet())
+        }
+    }
+}
+
+fun getGuessStatus() : String {
+    gameBoard = readLine().toString()
+    return gameBoard
 }
 
 fun isValid(guess: String) : Boolean {
