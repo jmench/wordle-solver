@@ -5,6 +5,7 @@ const val filePath = "./src/main/resources/sorted-words.txt"
 const val correctSpotChar = " 🟩"
 const val incorrectSpotChar = " 🟨"
 const val impossibleChar = " ⬛"
+const val gameBoardWinner = "ggggg"
 
 fun main() {
     // Set up the logic
@@ -34,7 +35,7 @@ fun main() {
             gameBoard = getGuessStatus(guess)
             getPossibleWordsBasedOnGameBoard(guess, gameBoard, possibleWords)
         }
-        if (gameBoard == "ggggg") {
+        if (gameBoard == gameBoardWinner) {
             println("you win")
             return
         }
@@ -48,30 +49,30 @@ fun getAndPrintPrettyGameBoard(gameBoard: String) {
     var prettyGameBoard = ""
     val gameBoardArr = gameBoard.toCharArray()
     for (letter in gameBoardArr) {
-        when (letter) {
-            'g' -> { prettyGameBoard += correctSpotChar }
-            'y' -> { prettyGameBoard += incorrectSpotChar }
-            else -> { prettyGameBoard += impossibleChar }
+        prettyGameBoard += when (letter) {
+            'g' -> { correctSpotChar }
+            'y' -> { incorrectSpotChar }
+            else -> { impossibleChar }
         }
     }
     println(prettyGameBoard)
 }
 
 fun updateGameBoard(guess: String, wordle: String): String {
-    var gameBaord = ""
+    var gameBoard = ""
     val guessArr = (guess.toCharArray())
     val wordleArr = (wordle.toCharArray())
     for (i in guessArr.indices) {
         if (guessArr[i] == wordleArr[i]) {
-            gameBaord += 'g'
+            gameBoard += 'g'
             wordleArr[i] = '-' // need to keep the solved letter from being tracked
         } else if (wordle.contains(guessArr[i])) {
-            gameBaord += 'y'
+            gameBoard += 'y'
         } else {
-            gameBaord += 'b'
+            gameBoard += 'b'
         }
     }
-    return handleRepeatedLetters(guess, gameBaord)
+    return handleRepeatedLetters(guess, gameBoard)
 }
 
 fun getGuessStatus(guess: String) : String {
