@@ -4,7 +4,7 @@ import java.util.ArrayList
 var wordle : String = ""
 var sortedWords : ArrayList<String> = ArrayList()
 var possibleWords : ArrayList<String> = ArrayList()
-val filePath = "/Users/jmench/Documents/dev/wordle-solver/src/main/resources/sorted-words.txt"
+val filePath = "./src/main/resources/sorted-words.txt"
 var gameBoard = ""
 var guessedLetters : ArrayList<String> = ArrayList()
 val correctSpotChar = " 🟩"
@@ -20,8 +20,6 @@ fun main() {
     possibleWords = sortedWords
 
     printInstructions()
-    println("Enter 1 if you want to play a random wordle")
-    println("Enter 2 if you want help solving your daily wordle")
     val gameChoice = readLine().toString()
 
     println("Please enter your first guess: ")
@@ -31,8 +29,8 @@ fun main() {
         if (gameChoice == "1") {
             updateGameBoard(guess, possibleWords)
         } else {
-            val guessStatus = getGuessStatus()
-            getPossibleWordsBasedOnGameBoard(guessStatus, guess, possibleWords)
+            getGuessStatus()
+            getPossibleWordsBasedOnGameBoard(possibleWords)
         }
         println(gameBoard)
         if (guess.contentEquals(wordle)) {
@@ -65,10 +63,8 @@ fun updateGameBoard(guess: String, possibleWords: ArrayList<String>) {
     }
 }
 
-fun getPossibleWordsBasedOnGameBoard(guessStatus: String, guess : String, possibleWords: ArrayList<String>) {
+fun getPossibleWordsBasedOnGameBoard(possibleWords: ArrayList<String>) {
     var gameBoardArr = gameBoard.toCharArray()
-    val guessArr = guessStatus.toCharArray()
-    val guessLettersArr = guess.toCharArray()
     for (i in gameBoardArr.indices) {
         val letter = gameBoardArr[i]
         if (gameBoardArr[i] == 'g') {
@@ -117,9 +113,8 @@ fun letterNotInWord(letter:Char, possibleWords: ArrayList<String>) {
     possibleWords.removeAll(wordsToRemove.toSet())
 }
 
-fun getGuessStatus() : String {
+fun getGuessStatus() {
     gameBoard = readLine().toString()
-    return gameBoard
 }
 
 fun isValid(guess: String) : Boolean {
@@ -145,4 +140,6 @@ fun printInstructions() {
     println("Here's how this works:")
     println("After you enter your guess, the solver will print a list of all possible words")
     println("Choose a word from the list as your next guess, and repeat the process until you've solved the wordle!")
+    println("Enter 1 if you want to play a random wordle")
+    println("Enter 2 if you want help solving your daily wordle")
 }
