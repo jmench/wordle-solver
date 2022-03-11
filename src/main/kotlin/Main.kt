@@ -1,22 +1,23 @@
 import java.io.File
 import java.util.ArrayList
 
-var wordle : String = ""
-var sortedWords : ArrayList<String> = ArrayList()
-var possibleWords : ArrayList<String> = ArrayList()
 const val filePath = "./src/main/resources/sorted-words.txt"
-var gameBoard = ""
 const val correctSpotChar = " 🟩"
 const val incorrectSpotChar = " 🟨"
 const val impossibleChar = " ⬛"
 
 fun main() {
     // Set up the logic
+    val sortedWords : ArrayList<String> = ArrayList()
+    val possibleWords : ArrayList<String> = ArrayList()
+    var gameBoard: String
+
     File(filePath).forEachLine {
         sortedWords.add(it)
+        possibleWords.add(it)
     }
 
-    possibleWords = sortedWords
+    val wordle = sortedWords.random()
 
     printInstructions()
     val gameChoice = readLine().toString()
@@ -24,50 +25,65 @@ fun main() {
     println("Please enter your first guess: ")
     for (i in 1..6) {
         println("Guess $i:")
-        val guess = getGuess()
+        val guess = getGuess(sortedWords)
         if (gameChoice == "1") {
-            wordle = sortedWords.random()
-            updateGameBoard(guess, possibleWords)
+            gameBoard = updateGameBoard(guess, wordle)
+            getPossibleWordsBasedOnGameBoard(guess, gameBoard, possibleWords)
+            getAndPrintPrettyGameBoard(gameBoard)
         } else {
-            getGuessStatus(guess)
-            getPossibleWordsBasedOnGameBoard(guess, possibleWords)
+            gameBoard = getGuessStatus(guess)
+            getPossibleWordsBasedOnGameBoard(guess, gameBoard, possibleWords)
         }
-        println(gameBoard)
-        if (guess.contentEquals(wordle)) {
+        if (gameBoard == "ggggg") {
             println("you win")
             return
         }
         println("Number of possible words: " + possibleWords.size)
         println(possibleWords)
     }
-    print("you lose")
+    print("you lose -- word was $wordle")
 }
 
-fun updateGameBoard(guess: String, possibleWords: ArrayList<String>) {
-    gameBoard = ""
+fun getAndPrintPrettyGameBoard(gameBoard: String) {
+    var prettyGameBoard = ""
+    val gameBoardArr = gameBoard.toCharArray()
+    for (letter in gameBoardArr) {
+        when (letter) {
+            'g' -> { prettyGameBoard += correctSpotChar }
+            'y' -> { prettyGameBoard += incorrectSpotChar }
+            else -> { prettyGameBoard += impossibleChar }
+        }
+    }
+    println(prettyGameBoard)
+}
+
+fun updateGameBoard(guess: String, wordle: String): String {
+    var game = ""
     val guessArr = (guess.toCharArray())
     val wordleArr = (wordle.toCharArray())
     for (i in guessArr.indices) {
-        val letter = guessArr[i]
         if (guessArr[i] == wordleArr[i]) {
-            gameBoard += correctSpotChar
-            wordleArr[i] = '-'
-            letterInCorrectSpot(letter, i, possibleWords)
+            game += 'g'
+            wordleArr[i] = '-' // need to keep the solved letter from being tracked
         } else if (wordle.contains(guessArr[i])) {
-            gameBoard += incorrectSpotChar
-            letterInWrongSpot(letter, i, possibleWords)
+            game += 'y'
         } else {
-            gameBoard += impossibleChar
-            letterNotInWord(letter, possibleWords)
+            game += 'b'
         }
     }
+    return game
 }
 
-fun getPossibleWordsBasedOnGameBoard(guess: String, possibleWords: ArrayList<String>) {
+fun getGuessStatus(guess: String) : String {
+    println("Please input the results of your word")
+    println("\'g\' for green | \'y\' for yellow | \'b\' for black")
+    val gameBoard = readLine().toString()
+    return handleRepeatedLetters(guess, gameBoard)
+}
+
+fun getPossibleWordsBasedOnGameBoard(guess: String, gameBoard: String, possibleWords: ArrayList<String>) {
     val gameBoardArr = gameBoard.toCharArray()
     val guessArr = guess.toCharArray()
-    println("Getting possible words for - " + guess)
-    println(gameBoard)
     for (i in guessArr.indices) {
         val letter = guessArr[i]
         if (gameBoardArr[i] == '-') {
@@ -119,15 +135,7 @@ fun letterNotInWord(letter:Char, possibleWords: ArrayList<String>) {
     possibleWords.removeAll(wordsToRemove.toSet())
 }
 
-fun getGuessStatus(guess: String) {
-    gameBoard = readLine().toString()
-    // check for repeat letters and prioritize the one in the correct (green) spot
-    // else choose first instance and make yellow, ignore second instance (make black but don't remove possible words)
-    // otherwise it doesn't matter because the letter isnt in the word
-    handleRepeatedLetters(guess)
-}
-
-fun handleRepeatedLetters(guess: String) {
+fun handleRepeatedLetters(guess: String, gameBoard: String) : String {
     val gameBoardArr = gameBoard.toCharArray()
     val guessArr = guess.toCharArray()
     for (i in guessArr.indices) {
@@ -147,10 +155,10 @@ fun handleRepeatedLetters(guess: String) {
     for(i in gameBoardArr.indices) {
         game += gameBoardArr[i]
     }
-    gameBoard = game
+   return game
 }
 
-fun isValid(guess: String) : Boolean {
+fun isValid(guess: String, sortedWords: ArrayList<String>) : Boolean {
     return if (sortedWords.contains(guess)) {
         true
     } else {
@@ -159,12 +167,11 @@ fun isValid(guess: String) : Boolean {
     }
 }
 
-fun getGuess() : String {
+fun getGuess(sortedWords: ArrayList<String>): String {
     var guess : String
     do {
         guess = readLine().toString()
-    } while(!isValid(guess))
-    possibleWords.remove(guess)
+    } while(!isValid(guess, sortedWords))
     return guess
 }
 
