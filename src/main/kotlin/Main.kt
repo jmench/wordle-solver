@@ -58,20 +58,20 @@ fun getAndPrintPrettyGameBoard(gameBoard: String) {
 }
 
 fun updateGameBoard(guess: String, wordle: String): String {
-    var game = ""
+    var gameBaord = ""
     val guessArr = (guess.toCharArray())
     val wordleArr = (wordle.toCharArray())
     for (i in guessArr.indices) {
         if (guessArr[i] == wordleArr[i]) {
-            game += 'g'
+            gameBaord += 'g'
             wordleArr[i] = '-' // need to keep the solved letter from being tracked
         } else if (wordle.contains(guessArr[i])) {
-            game += 'y'
+            gameBaord += 'y'
         } else {
-            game += 'b'
+            gameBaord += 'b'
         }
     }
-    return game
+    return handleRepeatedLetters(guess, gameBaord)
 }
 
 fun getGuessStatus(guess: String) : String {
